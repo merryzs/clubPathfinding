@@ -1,8 +1,38 @@
+#include <stdexcept>
+
 #include "cpe/navigation.hpp"
 namespace cpe {
 bool NavMesh::Build() {
     // TODO J3 : valider et structurer source_, calculer les adjacences/portails.
     // Remplir polygons_, portals_, graph_, puis définir built_=true.
+    
+    graph_.assign(polygons_.size(), {});
+    for (const Portal& portal : portals_)
+    {
+        if (!ValidNod(graph_, portal.a) ||
+            !ValidatePortal(graph_, portal.b) ||
+            portal.a == portal.b)
+        {
+            throw std::invalid_argument("Invalid Portal indicices");
+        }
+        
+        if (!Finite(portal.left) || !Finite(portal.right) || Distance(portal.left, portal.right) < 1e-8)
+        {
+            throw std::invalid_argument("Invalid Portal or null");
+        }
+        
+        const Polygon& regionA = polygons_[portal.a];
+        const Polygon& regionB = polygons_[portal.b];
+        
+        if (!Contains(regionA, portal.left) || !Contains(regionA, portal.right) || !Contains(regionB, portal.left) || !Contains(regionB, portal.right))
+        {
+            throw std::invalid_argument("Invalid Portal or null");
+        }
+        
+        const Point middle = portal.Middle();
+    }
+    
+    
     return false;
 }
 int NavMesh::Locate(Vec2 point) const {

@@ -20,23 +20,6 @@ SearchResult AStar(const Graph& graph, int start, int goal,
     
     // mmmmmm...
     
-    
-    for (auto i = 0 ; i < graph.size() ; ++i)
-    {
-        if (!Finite(graph[i])) throw std::invalid_argument("start or goal aren't finite");
-        
-        for (auto j = 0 ; j < i; ++j)
-        {
-            if (Near(start, goal )) throw std::invalid_argument("start and goal are similar");
-
-        }
-    }
-    if (NavMesh::SegmentInside(start,goal))
-    {
-        SearchResult.status = Status::Found;
-    }
-    
-    
 }
 }
 

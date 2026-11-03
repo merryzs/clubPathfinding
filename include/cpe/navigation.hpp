@@ -30,7 +30,7 @@ SearchResult AStar(const Graph& graph, int start, int goal,
                    const std::vector<double>& heuristic);
 
 struct Polygon { std::vector<Vec2> vertices; Vec2 center; };
-struct Portal { int a, b; Vec2 p, q; };
+struct Portal { int a, b; Points left, right; Points Middle() const {return (left + right) /2; } };
 struct Path {
     SearchResult search;
     std::vector<Vec2> points;
