@@ -62,32 +62,39 @@ Path NavMesh::FindPath(Vec2 from, Vec2 to, Algorithm algorithm) const {
     return {};
     
     
-     Path search;
+     Path result;
 
     if (!Finite(from) || !Finite(to)) {
-        return search ;
+        return result ;
     }
 
-    const int startRegion = mesh.Locate(from);
-    const int goalRegion = mesh.Locate(to);
+    const int startRegion = Locate(from);
+    const int goalRegion = Locate(to);
 
     if (startRegion < 0 || goalRegion < 0) {
-        search = Status::OutsideNavMesh;
-        return search;
+        result.search.status = Status::OutsideNavMesh;
+        return result;
     }
-
+    
+    
+    // calculer tout les sommets et les add dans h
+    
     auto h = [&](int n) -> double {
         return Distance(
-            mesh.polygons[n].center,
-            mesh.polygons[goalRegion].center
+            Polygons()[n].center,
+            Polygons()[goalRegion].center
         );
     };
 
-    if (useAStar) {
-        result.search = AStar(mesh.graph,startRegion,goalRegion,h);
-    }
-    else {
-        result.search = Dijkstra(mesh.graph,startRegion,goalRegion);
+    switch (algorithm)
+    {
+    case Algorithm::AStar :
+        result.search =  AStar(graph_, Locate(from), Locate(to), h); 
+        break;
+        
+    case Algorithm::Dijkstra :
+        result.search =  Dijkstra(graph_, Locate(from), Locate(to));
+        break;
     }
 
     if (result.search.status != Status::Found) {
