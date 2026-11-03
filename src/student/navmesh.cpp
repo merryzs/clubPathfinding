@@ -60,5 +60,85 @@ Path NavMesh::FindPath(Vec2 from, Vec2 to, Algorithm algorithm) const {
     (void)to;
     (void)algorithm;
     return {};
+    
+    
+     Path search;
+
+    if (!Finite(from) || !Finite(to)) {
+        return search ;
+    }
+
+    const int startRegion = mesh.Locate(from);
+    const int goalRegion = mesh.Locate(to);
+
+    if (startRegion < 0 || goalRegion < 0) {
+        search = Status::OutsideNavMesh;
+        return search;
+    }
+
+    auto h = [&](int n) -> double {
+        return Distance(
+            mesh.polygons[n].center,
+            mesh.polygons[goalRegion].center
+        );
+    };
+
+    if (useAStar) {
+        result.search = AStar(mesh.graph,startRegion,goalRegion,h);
+    }
+    else {
+        result.search = Dijkstra(mesh.graph,startRegion,goalRegion);
+    }
+
+    if (result.search.status != Status::Found) {
+        result.search.status = Status::NoPath;
+        return result;
+    }
+
+    auto append = [&](Point point) {
+        if (result.points.empty() ||
+            !SamePoint(result.points.back(), point)) {
+            result.points.push_back(point);
+            }
+    };
+
+    append(from);
+
+    if (startRegion != goalRegion) {
+        append(mesh.polygons[startRegion].center);
+
+        for (std::size_t i = 1;
+            i < result.search.nodes.size();
+            ++i) {
+            const int previous = result.search.nodes[i - 1];
+            const int next = result.search.nodes[i];
+
+            const Portal* portal =
+                mesh.Between(previous, next);
+
+            if (portal == nullptr) {
+                return NavPath{};
+            }
+
+            append(portal->center());
+            append(mesh.polygons[next].center);
+            }
+    }
+
+    append(to);
+
+    result.routeCost = 0.0;
+
+    for (std::size_t i = 1; i < result.points.size(); ++i) {
+        result.routeCost += Distance(
+            result.points[i - 1],
+            result.points[i]
+        );
+    }
+    return result;
+    
+    
+    
+    
 }
 }
