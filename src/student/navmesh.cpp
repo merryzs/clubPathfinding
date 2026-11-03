@@ -9,27 +9,29 @@ bool NavMesh::Build() {
     graph_.assign(polygons_.size(), {});
     for (const Portal& portal : portals_)
     {
-        if (!ValidNod(graph_, portal.a) ||
-            !ValidatePortal(graph_, portal.b) ||
+        if (!ValidNode(graph_, portal.a) ||
+            !ValidNode(graph_, portal.b) ||
             portal.a == portal.b)
         {
             throw std::invalid_argument("Invalid Portal indicices");
         }
         
-        if (!Finite(portal.left) || !Finite(portal.right) || Distance(portal.left, portal.right) < 1e-8)
+        if (!Finite(portal.p) || !Finite(portal.q) || Distance(portal.p, portal.q) < 1e-8)
         {
             throw std::invalid_argument("Invalid Portal or null");
         }
         
-        const Polygon& regionA = polygons_[portal.a];
-        const Polygon& regionB = polygons_[portal.b];
         
-        if (!Contains(regionA, portal.left) || !Contains(regionA, portal.right) || !Contains(regionB, portal.left) || !Contains(regionB, portal.right))
+        if (!Contains(portal.a , portal.p) || !Contains(portal.a , portal.q) || !Contains(portal.b, portal.p) || !Contains(portal.b, portal.q))
         {
             throw std::invalid_argument("Invalid Portal or null");
         }
         
-        const Point middle = portal.Middle();
+        const Vec2 middle = (Polygons()[portal.a].center + Polygons()[portal.b].center) * 0.5;
+        
+        const double cost = Distance(Polygons()[portal.a].center, middle) + Distance(middle, Polygons()[portal.b].center);
+    
+        AddUndirected(graph_, portal.a, portal.b, cost);
     }
     
     

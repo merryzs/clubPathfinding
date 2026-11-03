@@ -12,6 +12,17 @@ const char* Name(Status value);
 
 struct Edge { int to; double cost; };
 using Graph = std::vector<std::vector<Edge>>;
+    
+    inline bool ValidNode(const Graph& graph, int id)
+    {
+        return id >= 0 && id < static_cast<int>(graph_.size());
+    }
+    
+    inline bool AddUndirected(Graph& graph_, int a, int b, double cost)
+    {
+        graph_.at(a).push_back({b, cost});
+        graph_.at(b).push_back({a, cost});
+    }
 
 struct SearchResult {
     Status status = Status::NotImplemented;
@@ -30,7 +41,7 @@ SearchResult AStar(const Graph& graph, int start, int goal,
                    const std::vector<double>& heuristic);
 
 struct Polygon { std::vector<Vec2> vertices; Vec2 center; };
-struct Portal { int a, b; Points left, right; Points Middle() const {return (left + right) /2; } };
+struct Portal { int a, b; Vec2 p, q; };
 struct Path {
     SearchResult search;
     std::vector<Vec2> points;
