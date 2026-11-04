@@ -23,6 +23,7 @@ using Graph = std::vector<std::vector<Edge>>;
         graph_.at(a).push_back({b, cost});
         graph_.at(b).push_back({a, cost});
     }
+    
 
 struct SearchResult {
     Status status = Status::NotImplemented;
@@ -41,7 +42,7 @@ SearchResult AStar(const Graph& graph, int start, int goal,
                    const std::vector<double>& heuristic);
 
 struct Polygon { std::vector<Vec2> vertices; Vec2 center; };
-struct Portal { int a, b; Vec2 p, q; };
+struct Portal { int a, b; Vec2 p, q; Vec2 Middle() const {return( p + q) * 0.5;} };
 struct Path {
     SearchResult search;
     std::vector<Vec2> points;
@@ -69,6 +70,7 @@ public:
     const std::vector<Polygon>& Polygons() const { return polygons_; }
     const std::vector<Portal>& Portals() const { return portals_; }
     const Graph& GetGraph() const { return graph_; }
+    const Portal* Bet(int a, int b) const;
 private:
     std::vector<std::vector<Vec2>> source_;
     std::vector<Polygon> polygons_;

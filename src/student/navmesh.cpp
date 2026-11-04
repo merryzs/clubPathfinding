@@ -1,3 +1,4 @@
+#include <queue>
 #include <stdexcept>
 
 #include "cpe/navigation.hpp"
@@ -54,14 +55,10 @@ bool NavMesh::SegmentInside(Vec2 from, Vec2 to) const {
     (void)to;
     return false;
 }
+    
 Path NavMesh::FindPath(Vec2 from, Vec2 to, Algorithm algorithm) const {
     // TODO J3 : relier localisation, recherche sur graphe et trajet géométrique.
-    (void)from;
-    (void)to;
-    (void)algorithm;
-    return {};
-    
-    
+ 
      Path result;
 
     if (!Finite(from) || !Finite(to)) {
@@ -76,24 +73,22 @@ Path NavMesh::FindPath(Vec2 from, Vec2 to, Algorithm algorithm) const {
         return result;
     }
     
-    
     // calculer tout les sommets et les add dans h
+    std::vector<double> h;
     
-    auto h = [&](int n) -> double {
-        return Distance(
-            Polygons()[n].center,
-            Polygons()[goalRegion].center
-        );
-    };
-
+    for (int i = 0; i < static_cast<int>(Polygons().size()); i++)
+    {
+        h.push_back(Distance(Polygons()[i].center, Polygons()[goalRegion].center));
+    }
+    
     switch (algorithm)
     {
     case Algorithm::AStar :
-        result.search =  AStar(graph_, Locate(from), Locate(to), h); 
+        result.search =  AStar(graph_, startRegion, goalRegion, h); 
         break;
         
     case Algorithm::Dijkstra :
-        result.search =  Dijkstra(graph_, Locate(from), Locate(to));
+        result.search =  Dijkstra(graph_, startRegion, goalRegion);
         break;
     }
 
@@ -102,50 +97,49 @@ Path NavMesh::FindPath(Vec2 from, Vec2 to, Algorithm algorithm) const {
         return result;
     }
 
-    auto append = [&](Point point) {
+    auto append = [&](Vec2 point) {
         if (result.points.empty() ||
-            !SamePoint(result.points.back(), point)) {
+            !Near(result.points.back(), point)) {
             result.points.push_back(point);
             }
     };
 
     append(from);
 
-    if (startRegion != goalRegion) {
-        append(mesh.polygons[startRegion].center);
+    if (startRegion != goalRegion)
+    {
+        append(Polygons()[startRegion].center);
 
         for (std::size_t i = 1;
             i < result.search.nodes.size();
-            ++i) {
+            ++i)
+        {
             const int previous = result.search.nodes[i - 1];
             const int next = result.search.nodes[i];
 
             const Portal* portal =
-                mesh.Between(previous, next);
+                Bet(previous, next);
 
             if (portal == nullptr) {
-                return NavPath{};
+                return Path{};
             }
-
-            append(portal->center());
-            append(mesh.polygons[next].center);
-            }
+            
+            append(portal->Middle());
+            append(Polygons()[next].center);
+        }
     }
 
     append(to);
 
-    result.routeCost = 0.0;
+    result.length = 0.0;
 
     for (std::size_t i = 1; i < result.points.size(); ++i) {
-        result.routeCost += Distance(
+        result.length += Distance(
             result.points[i - 1],
             result.points[i]
         );
     }
     return result;
-    
-    
-    
     
 }
 }
