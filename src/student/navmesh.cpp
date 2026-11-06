@@ -199,6 +199,7 @@ namespace cpe
         }
         return result;
     }
+    
     const Portal* NavMesh::Bet(int a, int b) const
     {
         for (const Portal& portal : Portals()) {
