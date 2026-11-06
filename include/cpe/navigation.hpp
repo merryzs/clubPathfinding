@@ -11,30 +11,20 @@ namespace cpe
     const char* Name(Algorithm value);
     const char* Name(Status value);
 
-struct Edge { int to; double cost; };
-using Graph = std::vector<std::vector<Edge>>;
+    struct Edge { int to; double cost; };
+    using Graph = std::vector<std::vector<Edge>>;
     
-    inline bool ValidNode(const Graph& graph, int id)
+    inline bool ValidNode(const Graph& graph_, int id)
     {
         return id >= 0 && id < static_cast<int>(graph_.size());
     }
     
-    inline bool AddUndirected(Graph& graph_, int a, int b, double cost)
+    inline void AddUndirected(Graph& graph_, int a, int b, double cost)
     {
         graph_.at(a).push_back({b, cost});
         graph_.at(b).push_back({a, cost});
     }
     
-
-struct SearchResult {
-    Status status = Status::NotImplemented;
-    std::vector<int> nodes;
-    double cost = std::numeric_limits<double>::infinity();
-    int expanded = 0;
-    double microseconds = 0;
-};
-    struct Edge { int to; double cost; };
-    using Graph = std::vector<std::vector<Edge>>;
 
     struct SearchResult {
         Status status = Status::NotImplemented;
@@ -43,7 +33,7 @@ struct SearchResult {
         int expanded = 0;
         double microseconds = 0;
     };
-
+    
     // À réaliser dans src/student/pathfinding.cpp.
     // Found : chemin départ -> arrivée et coût.
     // NoPath : graphe valide mais destination inaccessible.
@@ -53,17 +43,14 @@ struct SearchResult {
                        const std::vector<double>& heuristic);
 
     struct Polygon { std::vector<Vec2> vertices; Vec2 center; };
-    struct Portal { int a, b; Vec2 p, q; };
+    struct Portal { int a, b; Vec2 p, q; Vec2 Middle() const { return (p + q) * 0.5; }; }; 
     struct Path {
         SearchResult search;
         std::vector<Vec2> points;
         double length = std::numeric_limits<double>::infinity();
         double queryMicroseconds = 0;
     };
-    inline bool ValidNode(const Graph& graph, int id) {
-        return id >= 0 && id < static_cast<int>(graph.size());
-    }
-
+    
     inline bool ValidGraph(const Graph& graph) {
         for (const auto& neighbors : graph) {
             for (const Edge& edge : neighbors) {
@@ -75,7 +62,6 @@ struct SearchResult {
         }
         return true;
     }
-};
 
     class NavMesh {
     public:
@@ -97,6 +83,7 @@ struct SearchResult {
         const std::vector<Polygon>& Polygons() const { return polygons_; }
         const std::vector<Portal>& Portals() const { return portals_; }
         const Graph& GetGraph() const { return graph_; }
+        const Portal* Bet(int a, int b ) const;
     private:
         std::vector<std::vector<Vec2>> source_;
         std::vector<Polygon> polygons_;
@@ -104,17 +91,6 @@ struct SearchResult {
         Graph graph_;
         bool built_ = false;
     };
-    // Le debug peut lire le résultat une fois construit par l'étudiant.
-    const std::vector<Polygon>& Polygons() const { return polygons_; }
-    const std::vector<Portal>& Portals() const { return portals_; }
-    const Graph& GetGraph() const { return graph_; }
-    const Portal* Bet(int a, int b) const;
-private:
-    std::vector<std::vector<Vec2>> source_;
-    std::vector<Polygon> polygons_;
-    std::vector<Portal> portals_;
-    Graph graph_;
-    bool built_ = false;
 };
-}
+
 
