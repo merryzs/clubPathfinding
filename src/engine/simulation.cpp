@@ -2,6 +2,7 @@
 #include <utility>
 
 namespace cpe {
+
 Simulation::Simulation(Level source) : level(std::move(source)) { Reset(); }
 
 void Simulation::Reset() {
