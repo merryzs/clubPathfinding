@@ -6,14 +6,27 @@ namespace cpe {
 struct Player { Vec2 position; Vec2 facing{0,-1}; };
 
 // Ce composant expose les données au debug ; le suivi est à implémenter.
-struct Navigator {
-    Path path;
-    std::size_t next = 0;
-    std::size_t requests = 0;
-    void Invalidate();
-    void Plan(const Level& level, Vec2 position, Vec2 target, Algorithm algorithm);
-    Vec2 Follow(const Level& level, Vec2 position, double speed, double dt);
-};
+    struct Navigator {
+        Path path;
+        std::size_t next = 0;
+        std::size_t requests = 0;
+
+        // État de planification
+        Vec2 lastGoal;
+        bool hasGoal = false;
+        double requestCooldown = 0.0;   
+        int failures = 0;               
+        bool needsReplan = false;   
+        
+        Algorithm lastAlgorithm = Algorithm::AStar;
+        static constexpr int kMaxFailures = 5;
+
+        
+        void Invalidate();
+        void Plan(const Level& level, Vec2 position, Vec2 target, Algorithm algorithm);
+        Vec2 Follow(const Level& level, Vec2 position, double speed, double dt);
+    };
+    
 enum class State { Waiting, Idle, Chase, Windup, Recover, Dead };
 const char* Name(State value);
 
