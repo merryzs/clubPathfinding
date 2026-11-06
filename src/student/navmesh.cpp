@@ -1,7 +1,7 @@
 #include <queue>
 #include <stdexcept>
 
-#include "cpe/navigation.hpp"
+#include <cpe/navigation.hpp>
 namespace cpe {
 bool NavMesh::Build() {
     // TODO J3 : valider et structurer source_, calculer les adjacences/portails.
