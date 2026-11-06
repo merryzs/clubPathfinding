@@ -1,0 +1,9 @@
+﻿  level.cpp
+  navigation_debug.cpp
+  simulation.cpp
+  enemy_ai.cpp
+  gameplay.cpp
+  navigation_agent.cpp
+  navmesh.cpp
+  pathfinding.cpp
+  cpe_core.vcxproj -> C:\Users\tbellancourt\source\repos\clubPathfinding\bin\x64\Debug\cpe_core.lib
