@@ -3,17 +3,37 @@
 #include <cstddef>
 
 namespace cpe {
-struct Player { Vec2 position; Vec2 facing{0,-1}; };
+struct Player
+{
+    Vec2 position; Vec2 facing{0,-1};
+    
+    //other info 
+    
+    int hp = 100;
+};
 
 // Ce composant expose les données au debug ; le suivi est à implémenter.
-struct Navigator {
-    Path path;
-    std::size_t next = 0;
-    std::size_t requests = 0;
-    void Invalidate();
-    void Plan(const Level& level, Vec2 position, Vec2 target, Algorithm algorithm);
-    Vec2 Follow(const Level& level, Vec2 position, double speed, double dt);
-};
+    struct Navigator {
+        Path path;
+        std::size_t next = 0;
+        std::size_t requests = 0;
+
+        // État de planification
+        Vec2 lastGoal;
+        bool hasGoal = false;
+        double requestCooldown = 0.0;   
+        int failures = 0;               
+        bool needsReplan = false;   
+        
+        Algorithm lastAlgorithm = Algorithm::AStar;
+        static constexpr int kMaxFailures = 5;
+
+        
+        void Invalidate();
+        void Plan(const Level& level, Vec2 position, Vec2 target, Algorithm algorithm);
+        Vec2 Follow(const Level& level, Vec2 position, double speed, double dt);
+    };
+    
 enum class State { Waiting, Idle, Chase, Windup, Recover, Dead };
 const char* Name(State value);
 
@@ -24,6 +44,30 @@ struct Enemy {
     EnemyKind kind = EnemyKind::Light;
     State state = State::Waiting;
     Navigator navigator;
+    NavMesh navmesh;
+    
+    //some state
+    int hp = 100;
+    int dmg = 10;
+    
+    double speed = 2.0;
+    
+    double DetctRange = 100;
+    double AtkRange = 10;
+    double LoseRange = 120;
+    
+    double CastTime = 1.0;
+    double PostCastCd = 1.0;
+    double GTimer = 0.0;
+    double cd = 0.0;
+    
+    void Delay(double dt)
+    {
+        cd = std::max(0.0, cd-dt);
+    };
+
+    
+    
 };
 class Simulation {
 public:
@@ -44,5 +88,7 @@ private:
     // À réaliser dans src/student/enemy_ai.cpp et gameplay.cpp.
     void UpdateEnemy(Enemy& enemy, double dt);
     void UpdateGameplay(bool actionPressed, double dt);
+    
+    
 };
 }
