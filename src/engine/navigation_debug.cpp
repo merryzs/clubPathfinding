@@ -22,6 +22,9 @@ const char* Name(State s) {
     }
     return "Unknown";
 }
+
+
+
 void NavMesh::SetSourcePolygons(const std::vector<std::vector<Vec2>>& source) {
     source_ = source;
     polygons_.clear();

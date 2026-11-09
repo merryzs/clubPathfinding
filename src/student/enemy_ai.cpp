@@ -28,7 +28,7 @@ void Simulation::UpdateEnemy(Enemy& enemy, double dt) {
 
     case State::Idle : 
         //boucle if a faire
-        if ( enemy.navmesh.Contains(enemy.DetctRange, player.position))
+        if ( level.navmesh.Contains(enemy.DetctRange, player.position))
         {
          enemy.state = State::Chase;   
         }
@@ -40,13 +40,13 @@ void Simulation::UpdateEnemy(Enemy& enemy, double dt) {
         
         // boucle if a faire
         // Attack
-        if (enemy.navmesh.Contains(enemy.AtkRange, player.position))
+        if (level.navmesh.Contains(enemy.AtkRange, player.position))
         {
             enemy.state = State::Windup;
             enemy.GTimer = enemy.CastTime;
         }
         // Lose player 
-        if (!enemy.navmesh.Contains(enemy.LoseRange, player.position))
+        if (!level.navmesh.Contains(enemy.LoseRange, player.position))
         {
             enemy.state = State::Idle;
         }
@@ -65,7 +65,7 @@ void Simulation::UpdateEnemy(Enemy& enemy, double dt) {
         {
             
             //distance a faire quand possible
-            if ( enemy.navmesh.Contains(enemy.AtkRange, player.position))
+            if ( level.navmesh.Contains(enemy.AtkRange, player.position))
             {
                 player.hp = std::max(0, player.hp - enemy.dmg);
             }
