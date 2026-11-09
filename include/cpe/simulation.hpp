@@ -37,6 +37,28 @@ struct Enemy {
     EnemyKind kind = EnemyKind::Light;
     State state = State::Waiting;
     Navigator navigator;
+    
+    //some state
+    int hp = 100;
+    double speed = 2.0;
+    int DetctRange = 100;
+    int AtkRange = 10;
+    int dmg = 10;
+    
+    
+    
+    double CastTime = 1.0;
+    double PostCastCd = 1.0;
+    double GTimer = 0.0;
+    
+    double cd = 0.0;
+    void Delay(double dt)
+    {
+        cd = std::max(0.0, cd-dt);
+    };
+
+    
+    
 };
 class Simulation {
 public:
@@ -57,5 +79,7 @@ private:
     // À réaliser dans src/student/enemy_ai.cpp et gameplay.cpp.
     void UpdateEnemy(Enemy& enemy, double dt);
     void UpdateGameplay(bool actionPressed, double dt);
+    
+    
 };
 }
