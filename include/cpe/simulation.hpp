@@ -3,7 +3,14 @@
 #include <cstddef>
 
 namespace cpe {
-struct Player { Vec2 position; Vec2 facing{0,-1}; };
+struct Player
+{
+    Vec2 position; Vec2 facing{0,-1};
+    
+    //other info 
+    
+    int hp = 100;
+};
 
 // Ce composant expose les données au debug ; le suivi est à implémenter.
     struct Navigator {
@@ -37,21 +44,23 @@ struct Enemy {
     EnemyKind kind = EnemyKind::Light;
     State state = State::Waiting;
     Navigator navigator;
+    NavMesh navmesh;
     
     //some state
     int hp = 100;
-    double speed = 2.0;
-    int DetctRange = 100;
-    int AtkRange = 10;
     int dmg = 10;
     
+    double speed = 2.0;
     
+    double DetctRange = 100;
+    double AtkRange = 10;
+    double LoseRange = 120;
     
     double CastTime = 1.0;
     double PostCastCd = 1.0;
     double GTimer = 0.0;
-    
     double cd = 0.0;
+    
     void Delay(double dt)
     {
         cd = std::max(0.0, cd-dt);

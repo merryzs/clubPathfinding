@@ -1,4 +1,5 @@
 #include "cpe/simulation.hpp"
+
 namespace cpe {
 void Simulation::UpdateEnemy(Enemy& enemy, double dt) {
     // TODO PROJET : perception, transitions, décisions et appel du Navigator.
@@ -27,22 +28,33 @@ void Simulation::UpdateEnemy(Enemy& enemy, double dt) {
 
     case State::Idle : 
         //boucle if a faire
-        if ()
+        if ( enemy.navmesh.Contains(enemy.DetctRange, player.position))
         {
-            
+         enemy.state = State::Chase;   
         }
         break;
 
     case State::Chase : 
+        
+        enemy.navigator.Follow(level, player.position, enemy.speed, dt);
+        
         // boucle if a faire
-        if ()
+        // Attack
+        if (enemy.navmesh.Contains(enemy.AtkRange, player.position))
         {
-            enemy.navigator.path.search 
+            enemy.state = State::Windup;
+            enemy.GTimer = enemy.CastTime;
         }
+        // Lose player 
+        if (!enemy.navmesh.Contains(enemy.LoseRange, player.position))
+        {
+            enemy.state = State::Idle;
+        }
+        //
         else
         {
-            enemy.navigator.Plan( level, position, target, algorithm);
-            enemy.navigator.Follow( level, position, speed , dt);
+            enemy.navigator.Plan( level, enemy.position, player.position, algorithm);
+            enemy.navigator.Follow( level, player.position, enemy.speed , dt);
         }
         break;
 
@@ -51,10 +63,11 @@ void Simulation::UpdateEnemy(Enemy& enemy, double dt) {
         
         if (enemy.GTimer <= 0 )
         {
+            
             //distance a faire quand possible
-            if ()
+            if ( enemy.navmesh.Contains(enemy.AtkRange, player.position))
             {
-                
+                player.hp = std::max(0, player.hp - enemy.dmg);
             }
             
             enemy.state = State::Recover;
