@@ -52,6 +52,12 @@ void Simulation::UpdateGameplay(bool actionPressed, double dt)
     }
 
 
+
+}
+
+void Wave::Wave(waves, enemies, multiplier)
+{
+    
 }
 }
     

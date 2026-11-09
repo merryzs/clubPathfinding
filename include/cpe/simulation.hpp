@@ -86,6 +86,16 @@ struct Enemy {
     
     };
     
+    struct Wave
+    {
+        int waves = 0;
+        
+        std::vector<Enemy> enemies;
+        double multiplier = 1.618;
+        
+        void Wave(waves, enemies, multiplier);
+        
+    };
     
 class Simulation {
 public:
@@ -106,7 +116,7 @@ private:
     // À réaliser dans src/student/enemy_ai.cpp et gameplay.cpp.
     void UpdateEnemy(Enemy& enemy, double dt);
     void UpdateGameplay(bool actionPressed, double dt);
-    void wave();
+    void wave(Enemy& enemy, double dt);
     
     
 };
