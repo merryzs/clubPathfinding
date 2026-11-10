@@ -3,7 +3,11 @@
 #include <cstddef>
 
 namespace cpe {
-struct Player { Vec2 position; Vec2 facing{0,-1}; };
+    
+    enum class State { Waiting, Idle, Chase, Windup, Recover, Dead };
+    const char* Name(State value);
+    
+
 
 // Ce composant expose les données au debug ; le suivi est à implémenter.
     struct Navigator {
@@ -27,8 +31,7 @@ struct Player { Vec2 position; Vec2 facing{0,-1}; };
         Vec2 Follow(const Level& level, Vec2 position, double speed, double dt);
     };
     
-enum class State { Waiting, Idle, Chase, Windup, Recover, Dead };
-const char* Name(State value);
+
 
 // Entités de démonstration immobiles ; aucun comportement n'est fourni.
 // Ajoutez ici les données nécessaires à votre propre IA et votre combat.
@@ -37,7 +40,63 @@ struct Enemy {
     EnemyKind kind = EnemyKind::Light;
     State state = State::Waiting;
     Navigator navigator;
+    //some state
+    int hp = 40;
+    int dmg = 10;
+    
+    double speed = 2.0;
+    
+    double DetctRange = 100;
+    double AtkRange = 10;
+    double LoseRange = 120;
+    
+    double CastTime = 1.0;
+    double PostCastCd = 1.0;
+    double GTimer = 0.0;
+    double cd = 0.0;
+    
+    void Delay(double dt)
+    {
+        cd = std::max(0.0, cd-dt);
+    };
 };
+    
+    struct Player
+    {
+        Vec2 position; Vec2 facing{0,-1};
+    
+        //other info 
+        State state = State::Idle;
+    
+        int hp = 100;
+        int dmg = 20;
+        
+        double AtkRange = 15;
+        
+        double CastTime = 1.0;
+        double PostCastCd = 1.0;
+        double GTimer = 0.0;
+        double cd = 0.0;
+        
+        void Delay(double dt)
+        {
+            cd = std::max(0.0, cd-dt);
+        };
+        
+    
+    };
+    
+    struct Wave
+    {
+        int waves = 0;
+        
+        std::vector<Enemy> enemies;
+        double multiplier = 1.618;
+        
+        void Wave(waves, enemies, multiplier);
+        
+    };
+    
 class Simulation {
 public:
     explicit Simulation(Level level);
@@ -57,5 +116,8 @@ private:
     // À réaliser dans src/student/enemy_ai.cpp et gameplay.cpp.
     void UpdateEnemy(Enemy& enemy, double dt);
     void UpdateGameplay(bool actionPressed, double dt);
+    void wave(Enemy& enemy, double dt);
+    
+    
 };
 }
