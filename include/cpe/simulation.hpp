@@ -46,9 +46,9 @@ struct Enemy {
     
     double speed = 2.0;
     
-    double DetctRange = 100;
-    double AtkRange = 10;
-    double LoseRange = 120;
+    double DetctRange = 3;
+    double AtkRange = 2;
+    double LoseRange = 4;
     
     double CastTime = 1.0;
     double PostCastCd = 1.0;
@@ -71,7 +71,7 @@ struct Enemy {
         int hp = 100;
         int dmg = 20;
         
-        double AtkRange = 15;
+        double AtkRange = 5;
         
         double CastTime = 1.0;
         double PostCastCd = 1.0;
@@ -93,7 +93,7 @@ struct Enemy {
         std::vector<Enemy> enemies;
         double multiplier = 1.618;
         
-        void Wave(waves, enemies, multiplier);
+        //void Wave(waves, enemies, multiplier);
         
     };
     

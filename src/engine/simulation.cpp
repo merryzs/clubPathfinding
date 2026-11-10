@@ -43,5 +43,7 @@ void Simulation::Update(Vec2 movement, bool actionPressed, double dt) {
 
     UpdateGameplay(actionPressed, dt);
     for (auto& enemy : enemies) UpdateEnemy(enemy, dt);
+    
+    enemies.erase(std::remove_if(enemies.begin(), enemies.end(),[](const Enemy& enemy) { return enemy.state == State::Dead; }),enemies.end());
 }
 }

@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "cpe/simulation.hpp"
 
 
@@ -53,9 +55,10 @@ namespace cpe
             return position;
         
         const double r = level.agentRadius;
-        double budget = speed * dt;
+        double budget = speed / dt;
+        std::cout << budget << std::endl;
 
-        while (next < path.points.size() && budget > 0) {
+        while (next < path.points.size() && budget < 0) {
             Vec2 delta = path.points[next] - position;
             double distance = Length(delta);
 
