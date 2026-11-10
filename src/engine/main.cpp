@@ -135,6 +135,8 @@ int main(int argc, char** argv) {
                     sim->Update(movement,actionPending,1.0/60);
                     actionPending=false; accumulator-=1.0/60;
                 }
+                
+                
             }
 
             BeginDrawing();

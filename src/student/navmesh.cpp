@@ -7,7 +7,7 @@ namespace cpe
     bool NavMesh::Build() {
         // TODO J3 : valider et structurer source_, calculer les adjacences/portails.
         // Remplir polygons_, portals_, graph_, puis définir built_=true.
-    
+        
         graph_.assign(polygons_.size(), {});
         for (const Portal& portal : portals_)
         {

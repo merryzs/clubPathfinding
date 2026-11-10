@@ -20,5 +20,6 @@ struct Level {
     bool CanMove(Vec2 from,Vec2 to,double radius)const;
     Vec2 MoveSliding(Vec2 from,Vec2 displacement,double radius)const;
     bool Visible(Vec2 from,Vec2 to)const;
+    
 };
 }

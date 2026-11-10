@@ -49,14 +49,36 @@ void Simulation::UpdateGameplay(bool actionPressed, double dt)
             break;
             
         }
+        
+        if ( wave.victory)
+        {
+            std::cout << "victory" << std::endl;
+        }
     }
-
-
-
 }
 
-void Wave::Wave(waves, enemies, multiplier)
+
+void Wave::Waves(int waves, std::vector<Enemy>enemies, bool victory )
 {
+    
+    int wave = waves;
+    
+    victory = false;
+    
+    int enemiesCount = enemies.size();
+    
+    if (enemiesCount <= 0)
+    {
+        wave++;
+        enemiesCount *=  multiplier;
+        enemies.resize(enemiesCount);
+        std::cout << "waves " << wave << std::endl;
+    }
+    
+    if ( wave > 5)
+    {
+        victory = true;
+    }
     
 }
 }

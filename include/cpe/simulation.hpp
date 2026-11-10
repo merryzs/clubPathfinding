@@ -46,8 +46,8 @@ struct Enemy {
     
     double speed = 2.0;
     
-    double DetctRange = 100;
-    double AtkRange = 10;
+    double DetctRange = 7;
+    double AtkRange = 1;
     double LoseRange = 120;
     
     double CastTime = 1.0;
@@ -64,7 +64,7 @@ struct Enemy {
     struct Player
     {
         Vec2 position; Vec2 facing{0,-1};
-    
+        
         //other info 
         State state = State::Idle;
     
@@ -89,12 +89,11 @@ struct Enemy {
     struct Wave
     {
         int waves = 0;
-        
-        std::vector<Enemy> enemies;
         double multiplier = 1.618;
         
-        void Wave(waves, enemies, multiplier);
+        bool victory = false, defeat = false;
         
+        void Waves( int waves, std::vector<Enemy> enemies, bool victory);
     };
     
 class Simulation {
@@ -102,6 +101,7 @@ public:
     explicit Simulation(Level level);
     Level level;
     Player player;
+    Wave wave;
     std::vector<Enemy> enemies;
     Algorithm algorithm = Algorithm::AStar;
     double elapsed = 0;
@@ -111,12 +111,12 @@ public:
     void Reset();
     void SetAlgorithm(Algorithm value);
     std::size_t RequestCount() const;
+    
 
 private:
     // À réaliser dans src/student/enemy_ai.cpp et gameplay.cpp.
     void UpdateEnemy(Enemy& enemy, double dt);
     void UpdateGameplay(bool actionPressed, double dt);
-    void wave(Enemy& enemy, double dt);
     
     
 };
