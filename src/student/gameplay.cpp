@@ -1,8 +1,6 @@
-#include <algorithm>
 #include <iostream>
 
 #include "cpe/simulation.hpp"
-
 namespace cpe {
 
     void Simulation::UpdateGameplay(bool actionPressed, double dt) {
@@ -14,15 +12,14 @@ namespace cpe {
 
         switch (player.state)
         {
-        case State::Idle:
-            // Espace déclenche la préparation de l'attaque
-            if (actionPressed) {
-                player.state  = State::Windup;
-                player.GTimer = player.PostCastCd;       // durée du Windup
+        case State::Idle :
+            if ( level.navmesh.Contains(player.AtkRange, enemies[i].position) )
+            {
+                player.state = State::Windup;
             }
             break;
-
-        case State::Windup:
+        
+        case State::Windup : 
             player.GTimer -= dt;
             if (player.GTimer <= 0.0) {
                 // La portée est vérifiée à la fin du Windup, sur tous les ennemis
@@ -49,7 +46,39 @@ namespace cpe {
 
         case State::Dead:
             break;
+            
+        }
+        
+        if ( wave.victory)
+        {
+            std::cout << "victory" << std::endl;
         }
     }
 
-} // namespace cpe
+
+void Wave::Waves(int waves, std::vector<Enemy>enemies, bool victory )
+{
+    
+    int wave = waves;
+    
+    victory = false;
+    
+    int enemiesCount = enemies.size();
+    
+    if (enemiesCount <= 0)
+    {
+        wave++;
+        enemiesCount *=  multiplier;
+        enemies.resize(enemiesCount);
+        std::cout << "waves " << wave << std::endl;
+    }
+    
+    if ( wave > 5)
+    {
+        victory = true;
+    }
+    
+}
+}
+    
+

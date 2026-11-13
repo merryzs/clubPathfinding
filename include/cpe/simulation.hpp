@@ -93,8 +93,9 @@ struct Enemy {
         std::vector<Enemy> enemies;
         double multiplier = 1.618;
         
-        //void Wave(waves, enemies, multiplier);
+        void Wave(waves, enemies, multiplier);
         
+        void Waves( int waves, std::vector<Enemy> enemies, bool victory);
     };
     
 class Simulation {
@@ -102,6 +103,7 @@ public:
     explicit Simulation(Level level);
     Level level;
     Player player;
+    Wave wave;
     std::vector<Enemy> enemies;
     Algorithm algorithm = Algorithm::AStar;
     double elapsed = 0;
@@ -111,6 +113,7 @@ public:
     void Reset();
     void SetAlgorithm(Algorithm value);
     std::size_t RequestCount() const;
+    
 
 private:
     // À réaliser dans src/student/enemy_ai.cpp et gameplay.cpp.
