@@ -43,21 +43,17 @@ void Simulation::UpdateEnemy(Enemy& enemy, double dt) {
         break;
 
     case State::Chase:
-        if (dist <= enemy.AtkRange) {               // 1) assez près : attaquer
+        if (dist <= enemy.AtkRange) {             
             enemy.state  = State::Windup;
             enemy.GTimer = enemy.CastTime;
             enemy.navigator.Invalidate();
         }
-        else if (dist > enemy.LoseRange) {          // 2) joueur perdu
-            enemy.state = State::Idle;
-            enemy.navigator.Invalidate();
-        }
-        else {                                      // 3) poursuite
+        else {                                     
             enemy.navigator.Plan(level, enemy.position, player.position, algorithm);
             enemy.position = enemy.navigator.Follow(level, enemy.position, enemy.speed, dt);
         }
         break;
-
+    
     case State::Windup:
         enemy.GTimer -= dt;
         if (enemy.GTimer <= 0.0) {
@@ -72,7 +68,12 @@ void Simulation::UpdateEnemy(Enemy& enemy, double dt) {
 
     case State::Recover:
         enemy.GTimer -= dt;
-        if (enemy.GTimer <= 0.0) {
+        
+        if (enemy.GTimer <= 0.0 && dist <= enemy.AtkRange ) {
+            enemy.state = State::Windup;
+        }
+        else
+        {
             enemy.state = State::Chase;
         }
         break;

@@ -47,11 +47,11 @@ struct Enemy {
     double speed = 2.0;
     
     double DetctRange = 3;
-    double AtkRange = 2;
+    double AtkRange = 1;
     double LoseRange = 4;
     
-    double CastTime = 1.0;
-    double PostCastCd = 1.0;
+    double CastTime = 0.5;
+    double PostCastCd = 0.5;
     double GTimer = 0.0;
     double cd = 0.0;
     
