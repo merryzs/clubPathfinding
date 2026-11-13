@@ -10,10 +10,6 @@ namespace cpe
         polygons_.clear();
         portals_.clear();
         graph_.clear();
-
-        constexpr double eps = 1e-6;
-        auto same = [&](Vec2 u, Vec2 v) { return Distance(u, v) < eps; };
-
         
         for (const auto& src : source_) {
             if (src.size() < 3) return false;
@@ -27,7 +23,6 @@ namespace cpe
             poly.center = sum * (1.0 / static_cast<double>(src.size()));
             polygons_.push_back(poly);
         }
-
         
         const int n = static_cast<int>(polygons_.size());
         for (int i = 0; i < n; ++i) {
@@ -44,8 +39,8 @@ namespace cpe
                         const Vec2 b1 = vj[ej];
                         const Vec2 b2 = vj[(ej + 1) % vj.size()];
 
-                        if ((same(a1, b2) && same(a2, b1)) ||
-                            (same(a1, b1) && same(a2, b2))) {
+                        if ((Near(a1, b2) && Near(a2, b1)) ||
+                            (Near(a1, b1) && Near(a2, b2))) {
                             Portal portal;
                             portal.a = i;
                             portal.b = j;
