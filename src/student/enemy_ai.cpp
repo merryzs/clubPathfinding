@@ -54,7 +54,7 @@ void Simulation::UpdateEnemy(Enemy& enemy, double dt) {
         }
         else {                                      // 3) poursuite
             enemy.navigator.Plan(level, enemy.position, player.position, algorithm);
-            enemy.navigator.Follow(level, player.position, enemy.speed, dt);
+            enemy.position = enemy.navigator.Follow(level, enemy.position, enemy.speed, dt);
         }
         break;
 
