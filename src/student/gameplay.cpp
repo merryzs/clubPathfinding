@@ -5,6 +5,8 @@ namespace cpe {
 
     void Simulation::UpdateGameplay(bool actionPressed, double dt) {
         // Joueur mort : plus rien ne se passe
+        
+        
         if (player.hp <= 0) {
             player.state = State::Dead;
             return;
@@ -34,6 +36,7 @@ namespace cpe {
                 }
                 player.state  = State::Recover;
                 player.GTimer = player.PostCastCd;      // durée du Recover
+                actionPressed = true;
             }
             break;
 
@@ -41,17 +44,13 @@ namespace cpe {
             player.GTimer -= dt;
             if (player.GTimer <= 0.0) {
                 player.state = State::Idle;
+                actionPressed = false;
             }
             break;
 
         case State::Dead:
             break;
             
-        }
-        
-        if ( wave.victory)
-        {
-            std::cout << "victory" << std::endl;
         }
     }
 

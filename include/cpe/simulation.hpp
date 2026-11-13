@@ -93,8 +93,6 @@ struct Enemy {
         std::vector<Enemy> enemies;
         double multiplier = 1.618;
         
-        void Wave(waves, enemies, multiplier);
-        
         void Waves( int waves, std::vector<Enemy> enemies, bool victory);
     };
     
@@ -119,8 +117,6 @@ private:
     // À réaliser dans src/student/enemy_ai.cpp et gameplay.cpp.
     void UpdateEnemy(Enemy& enemy, double dt);
     void UpdateGameplay(bool actionPressed, double dt);
-    void wave(Enemy& enemy, double dt);
-    
     
 };
 }
