@@ -1,3 +1,4 @@
+#include <iostream>
 #include <stdexcept>
 
 #include "cpe/navigation.hpp"
@@ -5,39 +6,82 @@
 namespace cpe
 {
     bool NavMesh::Build() {
-        // TODO J3 : valider et structurer source_, calculer les adjacences/portails.
-        // Remplir polygons_, portals_, graph_, puis définir built_=true.
-    
+        built_ = false;
+        polygons_.clear();
+        portals_.clear();
+        graph_.clear();
+        
+        for (const auto& src : source_) {
+            if (src.size() < 3) return false;
+            Polygon poly;
+            poly.vertices = src;
+            Vec2 sum{0, 0};
+            for (const Vec2& v : src) {
+                if (!Finite(v)) return false;
+                sum = sum + v;
+            }
+            poly.center = sum * (1.0 / static_cast<double>(src.size()));
+            polygons_.push_back(poly);
+        }
+        
+        const int n = static_cast<int>(polygons_.size());
+        for (int i = 0; i < n; ++i) {
+            const auto& vi = polygons_[i].vertices;
+            for (int j = i + 1; j < n; ++j) {
+                const auto& vj = polygons_[j].vertices;
+                bool found = false;
+
+                for (std::size_t ei = 0; ei < vi.size() && !found; ++ei) {
+                    const Vec2 a1 = vi[ei];
+                    const Vec2 a2 = vi[(ei + 1) % vi.size()];
+
+                    for (std::size_t ej = 0; ej < vj.size() && !found; ++ej) {
+                        const Vec2 b1 = vj[ej];
+                        const Vec2 b2 = vj[(ej + 1) % vj.size()];
+
+                        if ((Near(a1, b2) && Near(a2, b1)) ||
+                            (Near(a1, b1) && Near(a2, b2))) {
+                            Portal portal;
+                            portal.a = i;
+                            portal.b = j;
+                            portal.p = a1;
+                            portal.q = a2;
+                            portals_.push_back(portal);
+                            found = true;   
+                            }
+                    }
+                }
+            }
+        }
+
+  
         graph_.assign(polygons_.size(), {});
-        for (const Portal& portal : portals_)
-        {
+        for (const Portal& portal : portals_) {
             if (!ValidNode(graph_, portal.a) ||
                 !ValidNode(graph_, portal.b) ||
-                portal.a == portal.b)
-            {
-                throw std::invalid_argument("Invalid Portal indicices");
-            }
-        
-            if (!Finite(portal.p) || !Finite(portal.q) || Distance(portal.p, portal.q) < 1e-8)
-            {
-                throw std::invalid_argument("Invalid Portal or null");
-            }
-        
-        
-            if (!Contains(portal.a , portal.p) || !Contains(portal.a , portal.q) || !Contains(portal.b, portal.p) || !Contains(portal.b, portal.q))
-            {
-                throw std::invalid_argument("Invalid Portal or null");
-            }
-        
-            const Vec2 middle = (Polygons()[portal.a].center + Polygons()[portal.b].center) * 0.5;
-        
-            const double cost = Distance(Polygons()[portal.a].center, middle) + Distance(middle, Polygons()[portal.b].center);
-    
+                portal.a == portal.b) {
+                throw std::invalid_argument("Invalid Portal indices");
+                }
+
+            if (!Finite(portal.p) || !Finite(portal.q) ||
+                Distance(portal.p, portal.q) < 1e-8) {
+                throw std::invalid_argument("Invalid Portal (non finite or degenerate)");
+                }
+
+            if (!Contains(portal.a, portal.p) || !Contains(portal.a, portal.q) ||
+                !Contains(portal.b, portal.p) || !Contains(portal.b, portal.q)) {
+                throw std::invalid_argument("Portal endpoints outside its polygons");
+                }
+
+            const double cost = Distance(polygons_[portal.a].center,
+                                         polygons_[portal.b].center);
             AddUndirected(graph_, portal.a, portal.b, cost);
-        
         }
-        return false;
+
+        built_ = true;
+        return true;
     }
+
 
     bool NavMesh::SegmentInside(Vec2 from, Vec2 to) const {
         // TODO J3 : vérifier qu'un segment reste dans la surface navigable.
@@ -84,121 +128,129 @@ namespace cpe
     }
 
     int NavMesh::Locate(Vec2 point) const {
-        // TODO J3 : localiser le point dans un polygone navigable.
-        (void)point;
         if (!Finite(point)) return -1;
-        for (int i = 0; i < static_cast<int>(Polygons().size()); ++i)
-        {
+
+        const int count = static_cast<int>(Polygons().size());
+        for (int i = 0; i < count; ++i) {
             if (Contains(i, point)) return i;
         }
         return -1;
     }
+    
+    
+    bool NavMesh::Contains(int polygon, Vec2 point) const {
+        if (polygon < 0 || polygon >= static_cast<int>(Polygons().size())) return false;
+        if (!Finite(point)) return false;
 
-    bool NavMesh::Contains(int polygon, Vec2 point) const
-    {
-        // TODO J3 : test point dans polygone.
-        if (Finite(point) || Polygons()[polygon].vertices.size() < 3) return false;
+        const auto& vertices = Polygons()[polygon].vertices;
+        if (vertices.size() < 3) return false;
+
         constexpr double epsilon = 1e-8;
         bool positive = false, negative = false;
-        const auto& vertices = Polygons()[polygon].vertices;
-    
-        for (std::size_t i = 0;i < vertices.size();++i) {
+
+        for (std::size_t i = 0; i < vertices.size(); ++i) {
             const Vec2 a = vertices[i];
             const Vec2 b = vertices[(i + 1) % vertices.size()];
             const double side = Cross(b - a, point - a);
-            if (side >= epsilon) positive = true;
-            if (side < -epsilon) negative = true;
+            if (side >= epsilon)  positive = true;
+            if (side <= -epsilon) negative = true;
             if (positive && negative) return false;
         }
         return true;
     }
-
     
-    Path NavMesh::FindPath(Vec2 from, Vec2 to, Algorithm algorithm) const {
+    Path NavMesh::FindPath(Vec2 from, Vec2 to, Algorithm algorithm) const
+    {
         // TODO J3 : relier localisation, recherche sur graphe et trajet géométrique.
  
         Path result;
 
+        auto noPath = [&]() {
+            Path p;
+            p.search.status = Status::NoPath;
+            return p;
+        };
+        
         if (!Finite(from) || !Finite(to)) {
+            std::cerr << "[FindPath] sortie 1 : point non fini from=("
+          << from.x << "," << from.z << ") to=("
+          << to.x << "," << to.z << ")\n";
             return result ;
         }
 
         const int startRegion = Locate(from);
         const int goalRegion = Locate(to);
-
-        if (startRegion < 0 || goalRegion < 0) {
-            result.search.status = Status::OutsideNavMesh;
+        const int regionCount = static_cast<int>(Polygons().size());
+        
+        if (startRegion < 0 || goalRegion < 0 ||
+            startRegion >= regionCount || goalRegion >= regionCount
+            ) {
+            return noPath() ; 
+            }
+        
+        if (startRegion == goalRegion)
+        {
+            result.search.status = Status::Found;
+            result.points.push_back(from);
+            if (!Near(from, to)){
+                result.points.push_back(to);
+            }
+            result.length = Distance(from, to);
             return result;
         }
-    
-        // calculer tout les sommets et les add dans h
-        std::vector<double> h;
-    
-        for (int i = 0; i < static_cast<int>(Polygons().size()); i++)
-        {
-            h.push_back(Distance(Polygons()[i].center, Polygons()[goalRegion].center));
-        }
-    
-        switch (algorithm)
-        {
-        case Algorithm::AStar :
-            result.search =  AStar(graph_, startRegion, goalRegion, h); 
-            break;
         
-        case Algorithm::Dijkstra :
-            result.search =  Dijkstra(graph_, startRegion, goalRegion);
+        
+        switch (algorithm) {
+        case Algorithm::AStar: {
+            std::vector<double> h;
+            h.reserve(regionCount);
+            for (int i = 0; i < regionCount; ++i) {
+                h.push_back(Distance(Polygons()[i].center,
+                                     Polygons()[goalRegion].center));
+            }
+            result.search = AStar(graph_, startRegion, goalRegion, h);
+            break;
+        }
+        case Algorithm::Dijkstra:
+            result.search = Dijkstra(graph_, startRegion, goalRegion);
             break;
         }
 
         if (result.search.status != Status::Found) {
-            result.search.status = Status::NoPath;
-            return result;
+            return noPath();
         }
 
         auto append = [&](Vec2 point) {
-            if (result.points.empty() ||
-                !Near(result.points.back(), point)) {
+            if (result.points.empty() || !Near(result.points.back(), point)) {
                 result.points.push_back(point);
-                }
+            }
         };
 
         append(from);
+        append(Polygons()[startRegion].center);
 
-        if (startRegion != goalRegion)
-        {
-            append(Polygons()[startRegion].center);
+        for (std::size_t i = 1; i < result.search.nodes.size(); ++i) {
+            const int previous = result.search.nodes[i - 1];
+            const int next     = result.search.nodes[i];
 
-            for (std::size_t i = 1;
-                i < result.search.nodes.size();
-                ++i)
-            {
-                const int previous = result.search.nodes[i - 1];
-                const int next = result.search.nodes[i];
-
-                const Portal* portal =
-                    Bet(previous, next);
-
-                if (portal == nullptr) {
-                    return Path{};
-                }
-            
-                append(portal->Middle());
-                append(Polygons()[next].center);
+            const Portal* portal = Bet(previous, next);
+            if (portal == nullptr) {
+                return noPath();   // Correction 2 : statut cohérent
             }
+
+            append(portal->Middle());
+            append(Polygons()[next].center);
         }
 
         append(to);
 
         result.length = 0.0;
-
         for (std::size_t i = 1; i < result.points.size(); ++i) {
-            result.length += Distance(
-                result.points[i - 1],
-                result.points[i]
-            );
+            result.length += Distance(result.points[i - 1], result.points[i]);
         }
         return result;
     }
+    
     
     const Portal* NavMesh::Bet(int a, int b) const
     {
@@ -213,7 +265,6 @@ namespace cpe
                 return &portal;
             }
         }
-
         return nullptr;
     }
 }

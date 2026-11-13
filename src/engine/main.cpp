@@ -135,6 +135,8 @@ int main(int argc, char** argv) {
                     sim->Update(movement,actionPending,1.0/60);
                     actionPending=false; accumulator-=1.0/60;
                 }
+                
+                
             }
 
             BeginDrawing();
@@ -173,7 +175,7 @@ int main(int argc, char** argv) {
                 DrawText("CAMPUS PATH ENGINE - SOCLE ETUDIANT",25,24,22,WHITE);
                 DrawText(TextFormat("%s | Selection: %s | NavMesh: %s",
                     sim->level.title.c_str(),cpe::Name(sim->algorithm),
-                    sim->level.navmesh.IsBuilt()?"Construit":"A IMPLEMENTER"),25,55,18,LIGHTGRAY);
+                    sim->level.navmesh.IsBuilt()?"Construit":""),25,55,18,LIGHTGRAY);
                 DrawText("Navigation, IA et gameplay : fonctions a completer dans src/student/",25,80,18,YELLOW);
                 if (hasProbe) {
                     DrawText(TextFormat("Sonde: %s | %d developpes | %.2f us",

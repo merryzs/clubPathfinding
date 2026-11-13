@@ -1,98 +1,86 @@
+#include <algorithm>
+#include <iostream>
+
 #include "cpe/simulation.hpp"
 
 namespace cpe {
+
 void Simulation::UpdateEnemy(Enemy& enemy, double dt) {
-    // TODO PROJET : perception, transitions, décisions et appel du Navigator.
-    // Les ennemis restent immobiles tant que ce module n'est pas implémenté.
-    (void)enemy;
-    (void)dt;
-    
-    enemy.Delay(dt);
-    
-    if (enemy.hp <= 0 )
-    {
-        enemy.state = State::Dead; 
-        enemy.navigator.Invalidate(); 
-        return ;
-    }
-    
-    if (enemy.state == State::Dead)
-    {
+    // Ennemi déjà mort : il sera retiré par Update()
+    if (enemy.state == State::Dead) return;
+
+    // Passage à l'état mort (une seule fois)
+    if (enemy.hp <= 0) {
+        enemy.state = State::Dead;
+        enemy.navigator.Invalidate();
+        std::cout << "Enemy Dead " << (&enemy - enemies.data()) << std::endl;
         return;
     }
-    
+
+    enemy.Delay(dt);
+
+    // Joueur mort : l'ennemi se calme
+    if (player.hp <= 0) {
+        enemy.state = State::Idle;
+        enemy.navigator.Invalidate();
+        return;
+    }
+
+    const double dist = Distance(enemy.position, player.position);
+
     switch (enemy.state)
     {
-    case State::Waiting :
+    case State::Waiting:
+        // À remplacer par la condition de fin du délai d'apparition si besoin
+        enemy.state = State::Idle;
         break;
 
-    case State::Idle : 
-        //boucle if a faire
-        if ( enemy.navmesh.Contains(enemy.DetctRange, player.position))
-        {
-         enemy.state = State::Chase;   
+    case State::Idle:
+        if (dist <= enemy.DetctRange) {
+            std::cout << "Idle -> Chase (dist=" << dist << ")\n";
+            enemy.state = State::Chase;
         }
         break;
 
-    case State::Chase : 
-        
-        enemy.navigator.Follow(level, player.position, enemy.speed, dt);
-        
-        // boucle if a faire
-        // Attack
-        if (enemy.navmesh.Contains(enemy.AtkRange, player.position))
-        {
-            enemy.state = State::Windup;
+    case State::Chase:
+        if (dist <= enemy.AtkRange) {             
+            enemy.state  = State::Windup;
             enemy.GTimer = enemy.CastTime;
+            enemy.navigator.Invalidate();
         }
-        // Lose player 
-        if (!enemy.navmesh.Contains(enemy.LoseRange, player.position))
-        {
-            enemy.state = State::Idle;
-        }
-        //
-        else
-        {
-            enemy.navigator.Plan( level, enemy.position, player.position, algorithm);
-            enemy.navigator.Follow( level, player.position, enemy.speed , dt);
+        else {                                     
+            enemy.navigator.Plan(level, enemy.position, player.position, algorithm);
+            enemy.position = enemy.navigator.Follow(level, enemy.position, enemy.speed, dt);
         }
         break;
-
-    case State::Windup :
+    
+    case State::Windup:
         enemy.GTimer -= dt;
-        
-        if (enemy.GTimer <= 0 )
-        {
-            
-            //distance a faire quand possible
-            if ( enemy.navmesh.Contains(enemy.AtkRange, player.position))
-            {
+        if (enemy.GTimer <= 0.0) {
+            if (dist <= enemy.AtkRange) {
                 player.hp = std::max(0, player.hp - enemy.dmg);
+                std::cout << "Enemy Attack (HP Player " << player.hp << ")\n";
             }
-            
-            enemy.state = State::Recover;
+            enemy.state  = State::Recover;
             enemy.GTimer = enemy.PostCastCd;
         }
         break;
 
-    case State::Recover :   
+    case State::Recover:
         enemy.GTimer -= dt;
         
-        if (enemy.GTimer <= 0 )
+        if (enemy.GTimer <= 0.0 && dist <= enemy.AtkRange ) {
+            enemy.state = State::Windup;
+        }
+        else
         {
             enemy.state = State::Chase;
         }
         break;
-        
-    case State::Dead :
+
+    case State::Dead:
         break;
-        
     }
-    
-    
-    
-    
-}
 }
 
-
+} // namespace cpe
